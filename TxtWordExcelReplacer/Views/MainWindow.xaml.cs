@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Toolkit.Mvvm.DependencyInjection;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,8 +14,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using TxtWordExcelReplacer.ViewModel;
 
-namespace TxtWordExcelReplacer
+namespace TxtWordExcelReplacer.Views
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -23,6 +26,7 @@ namespace TxtWordExcelReplacer
         public MainWindow()
         {
             InitializeComponent();
+            DataContext = Ioc.Default.GetRequiredService<MainViewModel>();
         }
     }
 }

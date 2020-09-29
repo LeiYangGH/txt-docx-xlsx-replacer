@@ -1,10 +1,17 @@
-﻿using System;
+﻿using log4net;
+using log4net.Config;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Toolkit.Mvvm.DependencyInjection;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
+using TxtWordExcelReplacer.ViewModel;
 
 namespace TxtWordExcelReplacer
 {
@@ -13,5 +20,14 @@ namespace TxtWordExcelReplacer
     /// </summary>
     public partial class App : Application
     {
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            var logRepository = LogManager.GetRepository(Assembly.GetEntryAssembly());
+            XmlConfigurator.ConfigureAndWatch(logRepository, new FileInfo("TxtWordExcelReplacer.dll.config"));
+            ServiceCollection services = new ServiceCollection();
+            services.AddSingleton<MainViewModel>();
+            Ioc.Default.ConfigureServices(services);
+            base.OnStartup(e);
+        }
     }
 }
