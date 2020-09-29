@@ -14,13 +14,13 @@ namespace TxtWordExcelReplacer
             switch (ext)
             {
                 case ".txt":
-                    return this.ReplaceTxt(fileName, wordPairViewModels);
+                    return ReplaceTxt(fileName, wordPairViewModels);
                 default:
                     return $"未知扩展名{fileName}";
             }
         }
 
-        private string ReplaceTxt(string fileName, IList<WordPairViewModel> wordPairViewModels)
+        public static string ReplaceTxt(string fileName, IList<WordPairViewModel> wordPairViewModels)
         {
             try
             {

@@ -55,6 +55,52 @@ namespace TxtWordExcelReplacer.ViewModel
             set => SetProperty(ref message, value);
         }
 
+
+        private bool isWordAdding;
+        private RelayCommand wordAddCommand;
+
+        public RelayCommand WordAddCommand
+        {
+            get
+            {
+                return wordAddCommand
+                  ?? (wordAddCommand = new RelayCommand(
+                    async () =>
+                    {
+                        if (isWordAdding)
+                        {
+                            return;
+                        }
+
+                        isWordAdding = true;
+                        WordAddCommand.NotifyCanExecuteChanged();
+
+                        await WordAdd();
+
+                        isWordAdding = false;
+                        WordAddCommand.NotifyCanExecuteChanged();
+                    },
+                    () => !isWordAdding));
+            }
+        }
+        private async Task WordAdd()
+        {
+            await Task.Run(() =>
+            {
+                if (this.ObsWordPairVMs.All(x => x.IsValid))
+                {
+
+                    if (App.Current != null)//walkaround
+                        App.Current.Dispatcher.BeginInvoke(new Action(
+                            () =>
+                            {
+                                this.ObsWordPairVMs.Add(new WordPairViewModel());
+                            }));
+                }
+
+            });
+        }
+
         private bool isSearchAndReplacing;
         private RelayCommand searchAndReplaceCommand;
 
@@ -87,7 +133,7 @@ namespace TxtWordExcelReplacer.ViewModel
             await Task.Run(() =>
             {
                 foreach (string file in Directory.GetFiles(this.TopDir, "*", SearchOption.AllDirectories)
-                .Where(s => s.EndsWith(".txt") || s.EndsWith(".docx") || s.EndsWith(".xlsx")))
+                .Where(s => new string[] { ".txt", ".doc", ".docx", ".xlsx" }.Contains(Path.GetExtension(s))))
                 {
                     this.Message = this.replacer.Replace(file, this.ObsWordPairVMs.Where(x => x.IsValid).ToList());
                 }

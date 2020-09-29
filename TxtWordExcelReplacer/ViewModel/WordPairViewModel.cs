@@ -7,6 +7,11 @@ namespace TxtWordExcelReplacer.ViewModel
 {
     public class WordPairViewModel : ObservableObject
     {
+        public WordPairViewModel()
+        {
+            this.SrcWord = "";
+            this.DesWord = "";
+        }
         public WordPairViewModel(string srcWord, string desWord)
         {
             this.SrcWord = srcWord;
