@@ -1,7 +1,14 @@
 ﻿using Microsoft.Toolkit.Mvvm.ComponentModel;
+using Microsoft.Toolkit.Mvvm.Input;
+using Microsoft.VisualBasic.FileIO;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
+using SearchOption = System.IO.SearchOption;
 
 namespace TxtWordExcelReplacer.ViewModel
 {
@@ -9,9 +16,83 @@ namespace TxtWordExcelReplacer.ViewModel
     {
         private static readonly log4net.ILog log = log4net.LogManager.GetLogger
 (System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        public MainViewModel()
+        private IReplacer replacer;
+        public MainViewModel(IReplacer replacer)
         {
             log.Debug("MainViewModel ctor");
+            this.TopDir = "files";
+            this.InitDemoWordPairVMs();
+            this.replacer = replacer;
+        }
+
+        private void InitDemoWordPairVMs()
+        {
+            this.ObsWordPairVMs = new ObservableCollection<WordPairViewModel>()
+            {
+                new WordPairViewModel("从","到"),
+                new WordPairViewModel("from","to"),
+            };
+        }
+
+        private string topDir;
+        public string TopDir
+        {
+            get => topDir;
+            set => SetProperty(ref topDir, value);
+        }
+
+        private ObservableCollection<WordPairViewModel> obsWordPairVMs;
+        public ObservableCollection<WordPairViewModel> ObsWordPairVMs
+        {
+            get => obsWordPairVMs;
+            set => SetProperty(ref obsWordPairVMs, value);
+        }
+
+        private string message;
+        public string Message
+        {
+            get => message;
+            set => SetProperty(ref message, value);
+        }
+
+        private bool isSearchAndReplacing;
+        private RelayCommand searchAndReplaceCommand;
+
+        public RelayCommand SearchAndReplaceCommand
+        {
+            get
+            {
+                return searchAndReplaceCommand
+                  ?? (searchAndReplaceCommand = new RelayCommand(
+                    async () =>
+                    {
+                        if (isSearchAndReplacing)
+                        {
+                            return;
+                        }
+
+                        isSearchAndReplacing = true;
+                        SearchAndReplaceCommand.NotifyCanExecuteChanged();
+
+                        await SearchAndReplace();
+
+                        isSearchAndReplacing = false;
+                        SearchAndReplaceCommand.NotifyCanExecuteChanged();
+                    },
+                    () => !isSearchAndReplacing));
+            }
+        }
+        private async Task SearchAndReplace()
+        {
+            await Task.Run(() =>
+            {
+                foreach (string file in Directory.GetFiles(this.TopDir, "*", SearchOption.AllDirectories)
+                .Where(s => s.EndsWith(".txt") || s.EndsWith(".docx") || s.EndsWith(".xlsx")))
+                {
+                    this.Message = this.replacer.Replace(file, this.ObsWordPairVMs.Where(x => x.IsValid).ToList());
+                }
+                this.Message = "完成所有文件替换";
+            });
         }
     }
 }

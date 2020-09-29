@@ -4,9 +4,34 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TxtWordExcelReplacer"
+        xmlns:vm="clr-namespace:TxtWordExcelReplacer.ViewModel"
+        xmlns:vw="clr-namespace:TxtWordExcelReplacer.Views"
         mc:Ignorable="d"
-        Title="字符串替换工具" Height="450" Width="800">
+        Title="字符串替换工具" Height="450" Width="800"
+        FontSize="24">
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="5*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <TextBox Text="{Binding TopDir}"></TextBox>
+        <Button Content="切换路径" IsEnabled="False" Grid.Column="1"></Button>
 
+        <ItemsControl ItemsSource="{Binding ObsWordPairVMs}" Grid.Row="1" Margin="5">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <vw:UCWordPair/>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <Button Command="{Binding SearchAndReplaceCommand}" Content="开始搜索和替换"   Grid.Row="2"></Button>
+
+        <TextBox Grid.Row="3" MaxHeight="50" IsReadOnly="True" Text="{Binding Message,Mode=OneWay}" />
     </Grid>
 </Window>

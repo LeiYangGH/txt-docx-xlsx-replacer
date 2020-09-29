@@ -26,6 +26,7 @@ namespace TxtWordExcelReplacer
             XmlConfigurator.ConfigureAndWatch(logRepository, new FileInfo("TxtWordExcelReplacer.dll.config"));
             ServiceCollection services = new ServiceCollection();
             services.AddSingleton<MainViewModel>();
+            services.AddScoped<IReplacer, TxtAndZipReplacer>();
             Ioc.Default.ConfigureServices(services);
             base.OnStartup(e);
         }
