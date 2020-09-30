@@ -1,4 +1,6 @@
-﻿using NPOI.XWPF.UserModel;
+﻿using NPOI.SS.UserModel;
+using NPOI.XSSF.UserModel;
+using NPOI.XWPF.UserModel;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -7,8 +9,11 @@ using TxtWordExcelReplacer.ViewModel;
 
 namespace TxtWordExcelReplacer
 {
+
     public class TxtAndNPOIReplacer : IReplacer
     {
+        private static readonly log4net.ILog log = log4net.LogManager.GetLogger
+(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         public string Replace(string fileName, IList<WordPairViewModel> wordPairViewModels)
         {
             string ext = Path.GetExtension(fileName);
@@ -18,6 +23,8 @@ namespace TxtWordExcelReplacer
                     return TxtAndZipReplacer.ReplaceTxt(fileName, wordPairViewModels);
                 case ".docx":
                     return ReplaceDocx(fileName, wordPairViewModels);
+                case ".xlsx":
+                    return ReplaceXlsx(fileName, wordPairViewModels);
                 default:
                     return $"未知扩展名{fileName}";
             }
@@ -44,11 +51,74 @@ namespace TxtWordExcelReplacer
                 }
             }
         }
+
+        public static string ReplaceXlsx(string fileName, IList<WordPairViewModel> wordPairViewModels)
+        {
+            try
+            {
+                XSSFWorkbook xssfworkbook;
+                using (FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read))
+                {
+                    xssfworkbook = new XSSFWorkbook(fs);
+
+
+
+                    for (int j = 0; j < xssfworkbook.NumberOfSheets; j++)
+                    {
+                        //XSSFSheet 
+                        ISheet sheet = xssfworkbook.GetSheetAt(j);
+                        //ROW
+                        var rows = sheet.GetRowEnumerator();
+
+
+                        while (rows.MoveNext())
+                        {
+                            var row = (XSSFRow)rows.Current;
+
+                            for (var i = 0; i < row.LastCellNum; i++)
+                            {
+                                XSSFCell cell = (XSSFCell)row.GetCell(i);
+
+                                if (cell != null)
+                                {
+                                    String cellValue = cell.ToString();
+                                    foreach (var pair in wordPairViewModels)
+                                    {
+                                        if (cellValue.Contains(pair.SrcWord))
+                                        {
+                                            cell.SetCellValue(cellValue.Replace(pair.SrcWord, pair.DesWord));
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+
+
+
+                }
+                //另存为
+                MemoryStream stream = new MemoryStream();
+                xssfworkbook.Write(stream);
+                var buf = stream.ToArray();
+                //保存为Excel文件  
+                using (FileStream fs1 = new FileStream(fileName, FileMode.Create, FileAccess.Write))
+                {
+                    fs1.Write(buf, 0, buf.Length);
+                    fs1.Flush();
+                }
+                return $"替换完成{fileName}";
+            }
+            catch (Exception ex)
+            {
+                log.Error($"{fileName}:{ex.Message}");
+                return ex.Message;
+            }
+        }
+
         public static string ReplaceDocx(string fileName, IList<WordPairViewModel> wordPairViewModels)
         {
-            string backFileName = Helpers.GetBackedUpFileName(fileName);
-            if (!File.Exists(backFileName))
-                File.Copy(fileName, backFileName, false);
             XWPFDocument doc = null;
             try
             {
@@ -87,6 +157,7 @@ namespace TxtWordExcelReplacer
             }
             catch (Exception ex)
             {
+                log.Error($"{fileName}:{ex.Message}");
                 return ex.Message;
             }
         }

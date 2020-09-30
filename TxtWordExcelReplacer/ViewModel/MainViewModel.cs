@@ -133,8 +133,9 @@ namespace TxtWordExcelReplacer.ViewModel
             await Task.Run(() =>
             {
                 foreach (string file in Directory.GetFiles(this.TopDir, "*", SearchOption.AllDirectories)
-                .Where(s => new string[] { ".txt", ".doc", ".docx", ".xlsx" }.Contains(Path.GetExtension(s))))
+                .Where(s => new string[] { ".txt", ".docx", ".xlsx" }.Contains(Path.GetExtension(s))))
                 {
+                    this.Message = $"开始处理{file}";
                     this.Message = this.replacer.Replace(file, this.ObsWordPairVMs.Where(x => x.IsValid).ToList());
                 }
                 this.Message = "完成所有文件替换";
