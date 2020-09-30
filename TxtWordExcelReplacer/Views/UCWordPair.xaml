@@ -14,9 +14,9 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="2*" />
             </Grid.ColumnDefinitions>
-            <TextBox Text="{Binding SrcWord}"></TextBox>
+            <TextBox Text="{Binding SrcWord, UpdateSourceTrigger=PropertyChanged}"></TextBox>
             <TextBlock Text="-->" Grid.Column="1"></TextBlock>
-            <TextBox Text="{Binding DesWord}" Grid.Column="2"></TextBox>
+            <TextBox Text="{Binding DesWord, UpdateSourceTrigger=PropertyChanged}" Grid.Column="2"></TextBox>
         </Grid>
     </Border>
 

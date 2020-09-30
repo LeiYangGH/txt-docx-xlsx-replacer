@@ -1,6 +1,6 @@
 ﻿using Microsoft.Toolkit.Mvvm.ComponentModel;
 using Microsoft.Toolkit.Mvvm.Input;
-using Microsoft.VisualBasic.FileIO;
+//using Microsoft.VisualBasic.FileIO;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -8,7 +8,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SearchOption = System.IO.SearchOption;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using log4net.Repository.Hierarchy;
 
 namespace TxtWordExcelReplacer.ViewModel
 {
@@ -17,6 +19,7 @@ namespace TxtWordExcelReplacer.ViewModel
         private static readonly log4net.ILog log = log4net.LogManager.GetLogger
 (System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private IReplacer replacer;
+        private string configFile = "replaceconfigs.json";
         public MainViewModel(IReplacer replacer)
         {
             log.Debug("MainViewModel ctor");
@@ -27,11 +30,12 @@ namespace TxtWordExcelReplacer.ViewModel
 
         private void InitDemoWordPairVMs()
         {
-            this.ObsWordPairVMs = new ObservableCollection<WordPairViewModel>()
-            {
-                new WordPairViewModel("从","到"),
-                new WordPairViewModel("from","to"),
-            };
+            this.LoadConfigs();
+            //this.ObsWordPairVMs = new ObservableCollection<WordPairViewModel>()
+            //{
+            //    new WordPairViewModel("从","到"),
+            //    new WordPairViewModel("from","to"),
+            //};
         }
 
         private string topDir;
@@ -41,7 +45,7 @@ namespace TxtWordExcelReplacer.ViewModel
             set => SetProperty(ref topDir, value);
         }
 
-        private ObservableCollection<WordPairViewModel> obsWordPairVMs;
+        private ObservableCollection<WordPairViewModel> obsWordPairVMs = new ObservableCollection<WordPairViewModel>();
         public ObservableCollection<WordPairViewModel> ObsWordPairVMs
         {
             get => obsWordPairVMs;
@@ -55,6 +59,43 @@ namespace TxtWordExcelReplacer.ViewModel
             set => SetProperty(ref message, value);
         }
 
+
+        private bool isDirBrowsing;
+        private RelayCommand dirBrowseCommand;
+
+        public RelayCommand DirBrowseCommand
+        {
+            get
+            {
+                return dirBrowseCommand
+                  ?? (dirBrowseCommand = new RelayCommand(
+                      () =>
+                    {
+                        if (isDirBrowsing)
+                        {
+                            return;
+                        }
+
+                        isDirBrowsing = true;
+                        DirBrowseCommand.NotifyCanExecuteChanged();
+
+                        DirBrowse();
+
+                        isDirBrowsing = false;
+                        DirBrowseCommand.NotifyCanExecuteChanged();
+                    },
+                    () => !isDirBrowsing));
+            }
+        }
+        private void DirBrowse()
+        {
+            System.Windows.Forms.FolderBrowserDialog dialog = new System.Windows.Forms.FolderBrowserDialog();
+            if (!(dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK))
+            {
+                return;
+            }
+            this.TopDir = dialog.SelectedPath;
+        }
 
         private bool isWordAdding;
         private RelayCommand wordAddCommand;
@@ -145,6 +186,41 @@ namespace TxtWordExcelReplacer.ViewModel
                 }
                 this.Message = "完成所有文件替换";
             });
+        }
+
+        public void SaveConfigs()
+        {
+            try
+            {
+                ReplaceConfig replaceConfig = new ReplaceConfig(this.TopDir, this.ObsWordPairVMs);
+                string jsonString = JsonSerializer.Serialize(replaceConfig);
+                File.WriteAllText(this.configFile, jsonString);
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex.Message);
+            }
+
+        }
+
+        public void LoadConfigs()
+        {
+            try
+            {
+                if (!File.Exists(this.configFile))
+                {
+                    return;
+                }
+                string jsonString = File.ReadAllText(this.configFile);
+                ReplaceConfig replaceConfig = JsonSerializer.Deserialize<ReplaceConfig>(jsonString);
+                this.TopDir = replaceConfig.TopDir;
+                this.ObsWordPairVMs = new ObservableCollection<WordPairViewModel>(replaceConfig.ReplacePairs);
+            }
+            catch (Exception ex)
+            {
+                log.Error(ex.Message);
+            }
+
         }
     }
 }

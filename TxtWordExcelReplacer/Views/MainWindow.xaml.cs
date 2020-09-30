@@ -23,10 +23,17 @@ namespace TxtWordExcelReplacer.Views
     /// </summary>
     public partial class MainWindow : Window
     {
+        private MainViewModel mainViewModel;
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = Ioc.Default.GetRequiredService<MainViewModel>();
+            mainViewModel = Ioc.Default.GetRequiredService<MainViewModel>();
+            DataContext = mainViewModel;
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            mainViewModel.SaveConfigs();
         }
     }
 }

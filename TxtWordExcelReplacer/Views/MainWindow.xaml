@@ -8,7 +8,9 @@
         xmlns:vw="clr-namespace:TxtWordExcelReplacer.Views"
         mc:Ignorable="d"
         Title="字符串替换工具" Height="450" Width="800"
-        FontSize="24">
+        FontSize="24"
+        Closing="Window_Closing"
+        >
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"></RowDefinition>
@@ -21,7 +23,7 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <TextBox Text="{Binding TopDir}"></TextBox>
-        <Button Content="切换路径" IsEnabled="False" Grid.Column="1"></Button>
+        <Button Content="切换路径" Command="{Binding DirBrowseCommand}" Grid.Column="1"></Button>
 
         <ItemsControl ItemsSource="{Binding ObsWordPairVMs}" Grid.Row="1" Margin="5">
             <ItemsControl.ItemTemplate>

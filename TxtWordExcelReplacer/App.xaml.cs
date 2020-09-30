@@ -22,16 +22,16 @@ namespace TxtWordExcelReplacer
     {
         protected override void OnStartup(StartupEventArgs e)
         {
-            if (DateTime.Now > new DateTime(2020, 10, 8))
-            {
-                MessageBox.Show("试用期结束，请联系供应商！");
-                App.Current.Shutdown();
-            }
-            else if (DateTime.Now < new DateTime(2020, 9, 29))
-            {
-                MessageBox.Show("您不能让时间倒流！");
-                App.Current.Shutdown();
-            }
+            //if (DateTime.Now > new DateTime(2020, 10, 8))
+            //{
+            //    MessageBox.Show("试用期结束，请联系供应商！");
+            //    App.Current.Shutdown();
+            //}
+            //else if (DateTime.Now < new DateTime(2020, 9, 29))
+            //{
+            //    MessageBox.Show("您不能让时间倒流！");
+            //    App.Current.Shutdown();
+            //}
             var logRepository = LogManager.GetRepository(Assembly.GetEntryAssembly());
             XmlConfigurator.ConfigureAndWatch(logRepository, new FileInfo("TxtWordExcelReplacer.dll.config"));
             ServiceCollection services = new ServiceCollection();
