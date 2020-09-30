@@ -135,6 +135,11 @@ namespace TxtWordExcelReplacer.ViewModel
                 foreach (string file in Directory.GetFiles(this.TopDir, "*", SearchOption.AllDirectories)
                 .Where(s => new string[] { ".txt", ".docx", ".xlsx" }.Contains(Path.GetExtension(s))))
                 {
+                    if (Helpers.IsFileLocked(new FileInfo(file)))
+                    {
+                        log.Info($"{file}被其他程序占用，跳过");
+                        continue;
+                    }
                     this.Message = $"开始处理{file}";
                     this.Message = this.replacer.Replace(file, this.ObsWordPairVMs.Where(x => x.IsValid).ToList());
                 }
