@@ -23,14 +23,29 @@ namespace TxtWordExcelReplacer.Views
     /// </summary>
     public partial class MainWindow : Window
     {
+        private static readonly log4net.ILog log = log4net.LogManager.GetLogger
+(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private MainViewModel mainViewModel;
         public MainWindow()
         {
             InitializeComponent();
             mainViewModel = Ioc.Default.GetRequiredService<MainViewModel>();
             DataContext = mainViewModel;
+            this.ShowVersion();
+            log.Debug("主窗口开始运行!");
         }
 
+        private void ShowVersion()
+        {
+            string version = System.Reflection.Assembly.GetExecutingAssembly()
+                                           .GetName()
+                                           .Version
+                                           .ToString();
+            this.Title += " -" + version;
+
+            log.Info($"---------------------------------");
+            log.Info($"当前版本{version}");
+        }
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             mainViewModel.SaveConfigs();

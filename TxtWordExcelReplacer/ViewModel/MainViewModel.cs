@@ -169,21 +169,39 @@ namespace TxtWordExcelReplacer.ViewModel
                     () => !isSearchAndReplacing));
             }
         }
+
+        private void WorkInFolder(DirectoryInfo di)
+        {
+            foreach (FileInfo fi in di.GetFiles("*", SearchOption.AllDirectories)
+.Where(s => new string[] { ".txt", ".docx", ".xlsx" }.Contains(Path.GetExtension(s.Name))))
+            {
+                if (Helpers.IsFileLocked(fi))
+                {
+                    log.Info($"{fi.FullName}被其他程序占用，跳过");
+                    continue;
+                }
+                log.Info($"开始处理{fi.FullName}");
+                this.Message = $"开始处理{fi.FullName}";
+                this.Message = this.replacer.Replace(fi.FullName, this.ObsWordPairVMs.Where(x => x.IsValid).ToList());
+                log.Info($"结束处理{fi.FullName}");
+
+            }
+            foreach (DirectoryInfo subdir in di.GetDirectories())
+            {
+                log.Info($"开始处理文件夹{subdir.FullName}");
+                this.Message = $"开始处理文件夹{subdir.FullName}";
+                WorkInFolder(subdir);
+                log.Info($"结束处理文件夹{subdir.FullName}");
+                this.Message = $"结束处理文件夹{subdir.FullName}";
+            }
+        }
+
         private async Task SearchAndReplace()
         {
+            log.Info($"开始查找替换");
             await Task.Run(() =>
             {
-                foreach (string file in Directory.GetFiles(this.TopDir, "*", SearchOption.AllDirectories)
-                .Where(s => new string[] { ".txt", ".docx", ".xlsx" }.Contains(Path.GetExtension(s))))
-                {
-                    if (Helpers.IsFileLocked(new FileInfo(file)))
-                    {
-                        log.Info($"{file}被其他程序占用，跳过");
-                        continue;
-                    }
-                    this.Message = $"开始处理{file}";
-                    this.Message = this.replacer.Replace(file, this.ObsWordPairVMs.Where(x => x.IsValid).ToList());
-                }
+                WorkInFolder(new DirectoryInfo(this.TopDir));
                 this.Message = "完成所有文件替换";
             });
         }
